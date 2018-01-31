@@ -106,6 +106,12 @@ module ActiveRecord
       @table_info[env_name]
     end
 
+    def self.max_ids(ar_class)
+      tables = ar_class.connection.tables - %w(schema_migrations)
+      sql = "SELECT * FROM (#{tables.map { |t| "SELECT \"#{t}\", MAX(id) FROM `#{t}`" }.join(' UNION ')}) AS t"
+      ar_class.connection.execute(sql).to_h
+    end
+
     def self.define_methods!
       reload!
       sources.each do |src|

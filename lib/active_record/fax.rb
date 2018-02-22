@@ -45,6 +45,13 @@ module ActiveRecord
       %x{ssh #{src.server_username}@#{src.server} 'mysqldump --skip-lock-tables --single-transaction -h#{src.host} -u#{src.username} -p"#{src.password}" #{src.database} | gzip -9' | gzip -cd | mysql -u#{dst.username} -p#{dst.password} #{dst.database}}
     end
 
+    def self.copy_table(source_db, dest_db, table_name)
+      reload!
+      src = config(source_db, :source)
+      dst = config(dest_db, :destination)
+      %x{ssh #{src.server_username}@#{src.server} 'mysqldump --skip-lock-tables --single-transaction -h#{src.host} -u#{src.username} -p"#{src.password}" #{src.database} #{table_name} | gzip -8' | gzip -cd | mysql -u#{dst.username} -p#{dst.password} #{dst.database}}
+    end
+
     def self.incremental_copy(source_db, dest_db)
       reload!
       src = config(source_db, :source)
